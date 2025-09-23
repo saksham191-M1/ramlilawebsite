@@ -55,6 +55,7 @@
     "lucide-react": "^0.454.0",
     "next": "14.2.16",
     "next-themes": "latest",
+    "obuf": "^1.1.2",
     "pg": "^8.16.3",
     "pg-connection-string": "^2.9.1",
     "pg-int8": "^1.0.1",
