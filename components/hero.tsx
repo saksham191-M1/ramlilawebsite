@@ -28,7 +28,7 @@ export function Hero() {
             <Link href="/quiz">{quizTitle}</Link>
           </Button>
           <Button asChild size="lg" className="text-lg px-6 py-3 bg-red-600 hover:bg-red-700 text-white">
-            <Link href="/donate">दान करें</Link>
+            <Link href="/donate">{t("hero.donate")}</Link>
           </Button>
         </div>
       </div>

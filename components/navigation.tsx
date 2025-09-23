@@ -49,7 +49,7 @@ export function Navigation() {
                 href="/donate"
                 className="text-card-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
-                दान करें
+              {t("hero.donate")}
               </Link>
               
             </div>
@@ -90,12 +90,6 @@ export function Navigation() {
               className="text-card-foreground hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
             >
               {t("nav.quiz")}
-            </Link>
-            <Link
-              href="/donate"
-              className="text-card-foreground hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
-            >
-              दान करें
             </Link>
             
           </div>

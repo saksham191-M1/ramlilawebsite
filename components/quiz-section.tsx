@@ -10,7 +10,7 @@ export function QuizSection() {
   const { language } = useLanguage()
 
   const content = {
-    hindi: {
+    hi: {
       title: "Test Your Knowledge",
       subtitle: "रामलीला के इतिहास और परंपराओं के बारे में हमारी इंटरैक्टिव क्विज़ के साथ खुद को चुनौती दें",
       startQuiz: "अभी क्विज़ शुरू करें",
@@ -29,7 +29,7 @@ export function QuizSection() {
         },
       ],
     },
-    english: {
+    en: {
       title: "Test Your Knowledge",
       subtitle: "Challenge yourself with our interactive quiz about Ramlila history and traditions",
       startQuiz: "Start Quiz Now",
@@ -50,7 +50,7 @@ export function QuizSection() {
     },
   }
 
-  const currentContent = content[language] || content.hindi
+  const currentContent = content[language] || content.hi
 
   return (
     <section className="py-20 bg-ramlila-stage">

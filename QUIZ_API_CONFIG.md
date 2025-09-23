@@ -6,7 +6,7 @@ To enable dynamic quiz question generation, you need to configure an API key for
 
 ### 1. OpenAI (Recommended)
 - **Provider**: `openai`
-- **API Key**: Get from [OpenAI Platform](https://platform.openai.com/api-keys)
+- **API Key**: 
 - **Model**: `gpt-3.5-turbo` or `gpt-4`
 
 ### 2. Google Gemini
@@ -28,7 +28,7 @@ Create a `.env.local` file in your project root with the following variables:
 QUIZ_API_PROVIDER=openai
 
 # Required: Your API key
-QUIZ_API_KEY=your_api_key_here
+QUIZ_API_KEY=
 
 # Optional: For OpenAI - specify model
 QUIZ_API_MODEL=gpt-3.5-turbo
@@ -48,7 +48,7 @@ QUIZ_CACHE_TTL=60
 ### OpenAI Configuration
 ```bash
 QUIZ_API_PROVIDER=openai
-QUIZ_API_KEY=sk-your-openai-api-key-here
+QUIZ_API_KEY=
 QUIZ_API_MODEL=gpt-3.5-turbo
 ```
 

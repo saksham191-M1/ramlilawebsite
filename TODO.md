@@ -1,0 +1,3 @@
+- [ ] Modify `handleNextQuestion` to only set `showResult` to true and remove the `setTimeout` call.
+- [ ] Add a "Next Question" button that is only visible when `showResult` is true. This button will call a new function `goToNextQuestion`.
+- [ ] Create a new function `goToNextQuestion` that contains the logic that was previously inside the `setTimeout` function. This function will increment the question number, reset the selected answer, and hide the result.

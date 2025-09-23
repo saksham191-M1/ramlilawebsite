@@ -25,6 +25,7 @@ const translations = {
     "hero.description":
       "Witness the traditional Ramlila organized in Kalyanpur. A grand presentation of Lord Rama's life story.",
     "hero.cta": "Book Your Seat",
+    "hero.donate": "Donate",
 
     // About Section
     "about.title": "रामलीला के बारे में",
@@ -57,7 +58,7 @@ const translations = {
     "footer.contact": "Contact Us",
     "footer.address": "Ramlila Park, Shivani Vihar, Delhi",
     "footer.phone": "Phone: +91-XXXXXXXXXX",
-    "footer.email": "Email: info@ramlilakalyanpur.org",
+    "footer.email": "Email: kalyanpurramleela20@gmail.com",
   },
   hi: {
     // Navigation
@@ -73,6 +74,7 @@ const translations = {
     "hero.description":
       "कल्याणपुर में आयोजित होने वाली पारंपरिक रामलीला का साक्षी बनें। भगवान राम की जीवन गाथा का भव्य प्रस्तुतीकरण।",
     "hero.cta": "अपनी सीट बुक करें",
+    "hero.donate": "दान करें",
 
     // About Section
     "about.title": "रामलीला के बारे में",
@@ -105,7 +107,7 @@ const translations = {
     "footer.contact": "संपर्क करें",
     "footer.address": "रामलीला पार्क, शिवानी विहार, दिल्ली",
     "footer.phone": "फोन: +91-XXXXXXXXXX",
-    "footer.email": "ईमेल: info@ramlilakalyanpur.org",
+    "footer.email": "ईमेल: kalyanpurramleela20@gmail.com",
   },
 }
 

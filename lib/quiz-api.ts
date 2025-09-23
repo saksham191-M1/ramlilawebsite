@@ -9,9 +9,10 @@ interface QuizQuestion {
 
 interface QuizApiConfig {
   provider: 'openai' | 'google' | 'custom'
-  apiKey: string
+  apiKey:  string
   baseUrl?: string
   model?: string
+
 }
 
 interface QuizGenerationRequest {
@@ -265,34 +266,59 @@ Make sure the questions are accurate, educational, and related to Ramayana/Ramli
   private getFallbackQuestions(request: QuizGenerationRequest): QuizQuestion[] {
     // Return some default questions if API fails
     const isHindi = request.language === 'hi'
-    
+
     return [
       {
-        question: isHindi ? "रामायण के रचयिता कौन हैं?" : "Who is the author of Ramayana?",
-        options: isHindi 
-          ? ["महर्षि वाल्मीकि", "महर्षि व्यास", "तुलसीदास", "कालिदास"]
-          : ["Maharshi Valmiki", "Maharshi Vyasa", "Tulsidas", "Kalidasa"],
+        question: isHindi ? "राम के पिता का क्या नाम था?" : "What was the name of Rama's father?",
+        options: isHindi
+          ? ["दशरथ", "जनका", "विश्वामित्र", "हनुमान"]
+          : ["Dasharatha", "Janaka", "Vishwamitra", "Hanuman"],
         correct: 0,
-        explanation: isHindi 
-          ? "महर्षि वाल्मीकि ने संस्कृत में रामायण की रचना की थी।"
-          : "Maharshi Valmiki composed the original Sanskrit Ramayana epic.",
-        category: "History",
-        difficulty: "easy"
+        explanation: isHindi
+          ? "राम के पिता का नाम दशरथ था, जो अयोध्या के राजा थे।"
+          : "Rama's father was Dasharatha, the king of Ayodhya.",
+        category: "Characters",
+        difficulty: "easy",
       },
       {
-        question: isHindi ? "राम का जन्म कहाँ हुआ था?" : "Where was Rama born?",
-        options: isHindi 
-          ? ["मथुरा", "अयोध्या", "वाराणसी", "उज्जैन"]
-          : ["Mathura", "Ayodhya", "Varanasi", "Ujjain"],
+        question: isHindi ? "रावण कहाँ का राजा था?" : "Where was Ravana the king of?",
+        options: isHindi
+          ? ["अयोध्या", "लंका", "मिथिला", "किष्किन्धा"]
+          : ["Ayodhya", "Lanka", "Mithila", "Kishkindha"],
         correct: 1,
-        explanation: isHindi 
-          ? "भगवान राम का जन्म अयोध्या में हुआ था।"
-          : "Lord Rama was born in Ayodhya, the capital of the Kosala kingdom.",
+        explanation: isHindi
+          ? "रावण लंका का राजा था।"
+          : "Ravana was the king of Lanka.",
         category: "Geography",
-        difficulty: "easy"
-      }
+        difficulty: "easy",
+      },
+      {
+        question: isHindi ? "हनुमान किसके भक्त थे?" : "Who was Hanuman a devotee of?",
+        options: isHindi
+          ? ["राम", "कृष्ण", "शिव", "इंद्र"]
+          : ["Rama", "Krishna", "Shiva", "Indra"],
+        correct: 0,
+        explanation: isHindi
+          ? "हनुमान राम के भक्त थे।"
+          : "Hanuman was a devotee of Rama.",
+        category: "Characters",
+        difficulty: "easy",
+      },
+      {
+        question: isHindi ? "राम की पत्नी का क्या नाम था?" : "What was the name of Rama's wife?",
+        options: isHindi
+          ? ["सीता", "द्रौपदी", "राधा", "लक्ष्मी"]
+          : ["Sita", "Draupadi", "Radha", "Lakshmi"],
+        correct: 0,
+        explanation: isHindi
+          ? "राम की पत्नी का नाम सीता था।"
+          : "Rama's wife was Sita.",
+        category: "Characters",
+        difficulty: "easy",
+      },
     ]
   }
+
 
   // Clear cache method
   clearCache(): void {
@@ -306,4 +332,3 @@ Make sure the questions are accurate, educational, and related to Ramayana/Ramli
 }
 
 export { QuizApiService, type QuizQuestion, type QuizApiConfig, type QuizGenerationRequest }
-
