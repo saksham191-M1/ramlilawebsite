@@ -170,6 +170,9 @@ importers:
       pgpass:
         specifier: ^1.0.5
         version: 1.0.5
+      postgres-array:
+        specifier: ^3.0.4
+        version: 3.0.4
       react:
         specifier: ^18
         version: 18.3.1

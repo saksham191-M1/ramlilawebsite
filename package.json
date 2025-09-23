@@ -63,6 +63,7 @@
     "pg-protocol": "^1.10.3",
     "pg-types": "^4.1.0",
     "pgpass": "^1.0.5",
+    "postgres-array": "^3.0.4",
     "react": "^18",
     "react-day-picker": "9.8.0",
     "react-dom": "^18",
