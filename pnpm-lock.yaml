@@ -152,9 +152,15 @@ importers:
       pg-connection-string:
         specifier: ^2.9.1
         version: 2.9.1
+      pg-int8:
+        specifier: ^1.0.1
+        version: 1.0.1
       pg-pool:
         specifier: ^3.10.1
         version: 3.10.1(pg@8.16.3)
+      pg-protocol:
+        specifier: ^1.10.3
+        version: 1.10.3
       pg-types:
         specifier: ^4.1.0
         version: 4.1.0
