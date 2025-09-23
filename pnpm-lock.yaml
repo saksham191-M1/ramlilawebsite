@@ -173,6 +173,9 @@ importers:
       postgres-array:
         specifier: ^3.0.4
         version: 3.0.4
+      postgres-bytea:
+        specifier: ^3.0.0
+        version: 3.0.0
       react:
         specifier: ^18
         version: 18.3.1
