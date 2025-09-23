@@ -1,3 +1,5 @@
+// --- INTERFACES ---
+// Defines the structure for a single quiz question.
 interface QuizQuestion {
   question: string
   options: string[]
@@ -7,14 +9,16 @@ interface QuizQuestion {
   difficulty?: 'easy' | 'medium' | 'hard'
 }
 
+// Defines the configuration for the API service.
+// The apiKey will be provided by an environment variable.
 interface QuizApiConfig {
   provider: 'openai' | 'google' | 'custom'
-  apiKey:  string
+  apiKey: string // This will be loaded from .env
   baseUrl?: string
   model?: string
-
 }
 
+// Defines the structure for a request to generate new questions.
 interface QuizGenerationRequest {
   topic: string
   language: 'hi' | 'en'
@@ -23,12 +27,17 @@ interface QuizGenerationRequest {
   categories?: string[]
 }
 
+// --- API SERVICE CLASS ---
 class QuizApiService {
   private config: QuizApiConfig
   private cache: Map<string, QuizQuestion[]> = new Map()
 
   constructor(config: QuizApiConfig) {
     this.config = config
+    if (!config.apiKey) {
+      console.error("API key is missing in the configuration!");
+      throw new Error("API key is required for QuizApiService.");
+    }
   }
 
   async generateQuestions(request: QuizGenerationRequest): Promise<QuizQuestion[]> {
@@ -93,17 +102,16 @@ class QuizApiService {
     })
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`)
+      throw new Error(`OpenAI API error: ${response.statusText}`)
     }
 
     const data = await response.json()
     const content = data.choices[0].message.content
     
-    return this.parseOpenAIResponse(content)
+    return this.parseApiResponse(content)
   }
 
   private async generateWithGoogle(request: QuizGenerationRequest): Promise<QuizQuestion[]> {
-    // Google Gemini API integration
     const prompt = this.buildGooglePrompt(request)
     
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${this.config.apiKey}`, {
@@ -125,13 +133,13 @@ class QuizApiService {
     })
 
     if (!response.ok) {
-      throw new Error(`Google API error: ${response.status}`)
+      throw new Error(`Google API error: ${response.statusText}`)
     }
 
     const data = await response.json()
     const content = data.candidates[0].content.parts[0].text
     
-    return this.parseGoogleResponse(content)
+    return this.parseApiResponse(content)
   }
 
   private async generateWithCustomAPI(request: QuizGenerationRequest): Promise<QuizQuestion[]> {
@@ -152,34 +160,14 @@ class QuizApiService {
   }
 
   private buildOpenAIPrompt(request: QuizGenerationRequest): string {
-    const language = request.language === 'hi' ? 'Hindi' : 'English'
-    const difficulty = request.difficulty || 'medium'
-    
-    return `Generate ${request.count} quiz questions about ${request.topic} in ${language}.
-
-Requirements:
-- Language: ${language}
-- Difficulty: ${difficulty}
-- Topic: ${request.topic}
-- Format: Multiple choice with 4 options each
-- Include explanations for correct answers
-
-Return the questions in this JSON format:
-[
-  {
-    "question": "Question text here",
-    "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-    "correct": 0,
-    "explanation": "Explanation of the correct answer",
-    "category": "Category name",
-    "difficulty": "${difficulty}"
-  }
-]
-
-Make sure the questions are accurate, educational, and related to Ramayana/Ramlila traditions.`
+    return this.buildBasePrompt(request);
   }
 
   private buildGooglePrompt(request: QuizGenerationRequest): string {
+    return this.buildBasePrompt(request);
+  }
+  
+  private buildBasePrompt(request: QuizGenerationRequest): string {
     const language = request.language === 'hi' ? 'Hindi' : 'English'
     const difficulty = request.difficulty || 'medium'
     
@@ -192,50 +180,33 @@ Requirements:
 - Format: Multiple choice with 4 options each
 - Include explanations for correct answers
 
-Return the questions in this JSON format:
+Return ONLY the questions in a valid JSON array format like this:
 [
   {
     "question": "Question text here",
     "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
     "correct": 0,
-    "explanation": "Explanation of the correct answer",
+    "explanation": "Explanation of the correct answer.",
     "category": "Category name",
     "difficulty": "${difficulty}"
   }
 ]
 
-Make sure the questions are accurate, educational, and related to Ramayana/Ramlila traditions.`
+Do not include any text before or after the JSON array.`
   }
 
-  private parseOpenAIResponse(content: string): QuizQuestion[] {
+  private parseApiResponse(content: string): QuizQuestion[] {
     try {
-      // Extract JSON from the response
       const jsonMatch = content.match(/\[[\s\S]*\]/)
       if (!jsonMatch) {
-        throw new Error('No JSON found in response')
+        throw new Error('No valid JSON array found in the API response.')
       }
       
       const questions = JSON.parse(jsonMatch[0])
       return this.validateQuestions(questions)
     } catch (error) {
-      console.error('Error parsing OpenAI response:', error)
-      throw new Error('Failed to parse API response')
-    }
-  }
-
-  private parseGoogleResponse(content: string): QuizQuestion[] {
-    try {
-      // Extract JSON from the response
-      const jsonMatch = content.match(/\[[\s\S]*\]/)
-      if (!jsonMatch) {
-        throw new Error('No JSON found in response')
-      }
-      
-      const questions = JSON.parse(jsonMatch[0])
-      return this.validateQuestions(questions)
-    } catch (error) {
-      console.error('Error parsing Google response:', error)
-      throw new Error('Failed to parse API response')
+      console.error('Error parsing API response:', error)
+      throw new Error('Failed to parse API response.')
     }
   }
 
@@ -250,10 +221,7 @@ Make sure the questions are accurate, educational, and related to Ramayana/Ramli
       q.correct < 4 &&
       q.explanation
     ).map(q => ({
-      question: q.question,
-      options: q.options,
-      correct: q.correct,
-      explanation: q.explanation,
+      ...q, // Keep all valid fields
       category: q.category || 'General',
       difficulty: q.difficulty || 'medium'
     }))
@@ -264,71 +232,59 @@ Make sure the questions are accurate, educational, and related to Ramayana/Ramli
   }
 
   private getFallbackQuestions(request: QuizGenerationRequest): QuizQuestion[] {
-    // Return some default questions if API fails
     const isHindi = request.language === 'hi'
-
     return [
       {
         question: isHindi ? "राम के पिता का क्या नाम था?" : "What was the name of Rama's father?",
-        options: isHindi
-          ? ["दशरथ", "जनका", "विश्वामित्र", "हनुमान"]
-          : ["Dasharatha", "Janaka", "Vishwamitra", "Hanuman"],
+        options: isHindi ? ["दशरथ", "जनका", "विश्वामित्र", "हनुमान"] : ["Dasharatha", "Janaka", "Vishwamitra", "Hanuman"],
         correct: 0,
-        explanation: isHindi
-          ? "राम के पिता का नाम दशरथ था, जो अयोध्या के राजा थे।"
-          : "Rama's father was Dasharatha, the king of Ayodhya.",
+        explanation: isHindi ? "राम के पिता का नाम दशरथ था, जो अयोध्या के राजा थे।" : "Rama's father was Dasharatha, the king of Ayodhya.",
         category: "Characters",
         difficulty: "easy",
       },
       {
         question: isHindi ? "रावण कहाँ का राजा था?" : "Where was Ravana the king of?",
-        options: isHindi
-          ? ["अयोध्या", "लंका", "मिथिला", "किष्किन्धा"]
-          : ["Ayodhya", "Lanka", "Mithila", "Kishkindha"],
+        options: isHindi ? ["अयोध्या", "लंका", "मिथिला", "किष्किन्धा"] : ["Ayodhya", "Lanka", "Mithila", "Kishkindha"],
         correct: 1,
-        explanation: isHindi
-          ? "रावण लंका का राजा था।"
-          : "Ravana was the king of Lanka.",
+        explanation: isHindi ? "रावण लंका का राजा था।" : "Ravana was the king of Lanka.",
         category: "Geography",
-        difficulty: "easy",
-      },
-      {
-        question: isHindi ? "हनुमान किसके भक्त थे?" : "Who was Hanuman a devotee of?",
-        options: isHindi
-          ? ["राम", "कृष्ण", "शिव", "इंद्र"]
-          : ["Rama", "Krishna", "Shiva", "Indra"],
-        correct: 0,
-        explanation: isHindi
-          ? "हनुमान राम के भक्त थे।"
-          : "Hanuman was a devotee of Rama.",
-        category: "Characters",
-        difficulty: "easy",
-      },
-      {
-        question: isHindi ? "राम की पत्नी का क्या नाम था?" : "What was the name of Rama's wife?",
-        options: isHindi
-          ? ["सीता", "द्रौपदी", "राधा", "लक्ष्मी"]
-          : ["Sita", "Draupadi", "Radha", "Lakshmi"],
-        correct: 0,
-        explanation: isHindi
-          ? "राम की पत्नी का नाम सीता था।"
-          : "Rama's wife was Sita.",
-        category: "Characters",
         difficulty: "easy",
       },
     ]
   }
 
-
-  // Clear cache method
   clearCache(): void {
     this.cache.clear()
   }
 
-  // Get cache size
   getCacheSize(): number {
     return this.cache.size
   }
 }
 
-export { QuizApiService, type QuizQuestion, type QuizApiConfig, type QuizGenerationRequest }
+
+// --- SERVICE INSTANTIATION AND EXPORT ---
+
+// Securely get the API key from environment variables.
+// This syntax (`process.env.REACT_APP_...`) is standard for projects created with Create React App.
+const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+
+// Throw an error if the API key is not found. This helps with debugging.
+if (!apiKey) {
+  throw new Error("API Key not found. Please add REACT_APP_OPENAI_API_KEY to your .env file.");
+}
+
+// Create the configuration object for the service.
+const quizApiConfig: QuizApiConfig = {
+  provider: 'openai', // You can change this to 'google' if needed
+  apiKey: apiKey,
+  model: 'gpt-3.5-turbo'
+};
+
+// Create a single, shared instance of the service.
+const quizService = new QuizApiService(quizApiConfig);
+
+
+// Export the service instance and the interfaces for use in other files.
+export { quizService, type QuizQuestion, type QuizApiConfig, type QuizGenerationRequest };
+
