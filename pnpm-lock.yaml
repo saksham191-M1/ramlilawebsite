@@ -176,6 +176,9 @@ importers:
       postgres-bytea:
         specifier: ^3.0.0
         version: 3.0.0
+      postgres-date:
+        specifier: ^2.1.0
+        version: 2.1.0
       react:
         specifier: ^18
         version: 18.3.1
