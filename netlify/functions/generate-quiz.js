@@ -1,42 +1,38 @@
 /**
  * This is a Netlify Function that acts as a secure proxy to the OpenAI API.
- * It receives a request from the frontend, adds the secret API key on the server,
- * calls OpenAI, and then returns the response to the frontend.
- * This keeps the API key completely hidden from the user's browser.
  */
 exports.handler = async function(event) {
-  // Only allow POST requests, reject anything else.
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
   try {
-    // 1. Get the quiz requirements from the frontend request.
     const request = JSON.parse(event.body);
-    
-    // 2. Securely get the API key from the environment variables you set in Netlify.
-    const apiKey = process.env.OPENAI_API_KEY; 
+
+    // --- Server-side validation ---
+    const count = Math.min(request.count || 5, 10); // Limit to 10 questions max
+    const topic = request.topic || 'Ramayana';
+    const language = ['hi', 'en'].includes(request.language) ? request.language : 'hi';
+    const difficulty = ['easy', 'medium', 'hard'].includes(request.difficulty) ? request.difficulty : 'medium';
+    // --- End validation ---
+
+    const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
-      console.error("The OPENAI_API_KEY environment variable is not set in Netlify.");
-      throw new Error("Server configuration error: API key is missing.");
+      console.error("OPENAI_API_KEY is not set.");
+      throw new Error("Server configuration error.");
     }
     
-    // 3. Build the detailed prompt for OpenAI.
-    const language = request.language === 'hi' ? 'Hindi' : 'English';
-    const difficulty = request.difficulty || 'medium';
-    
-    const prompt = `Generate ${request.count} quiz questions about ${request.topic} in ${language}.
+    const prompt = `Generate ${count} quiz questions about ${topic} in ${language}.
       Requirements:
       - Language: ${language}
       - Difficulty: ${difficulty}
-      - Topic: ${request.topic}
+      - Topic: ${topic}
       - Format: Multiple choice with 4 options each.
       - Include detailed explanations for the correct answers.
-      - Return ONLY the questions in a valid JSON array format.
-      - Do not include any text or markdown formatting before or after the JSON array.`;
+      - Return ONLY the questions in a valid JSON array format inside a JSON object with a key "questions".
+      - Do not include any text or markdown formatting before or after the JSON object.`;
 
-    // 4. Call the OpenAI API.
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -51,11 +47,10 @@ exports.handler = async function(event) {
         ],
         temperature: 0.7,
         max_tokens: 2000,
-        response_format: { "type": "json_object" } // Ask for JSON directly
+        response_format: { "type": "json_object" }
       })
     });
 
-    // Handle errors from the OpenAI API.
     if (!response.ok) {
       const errorBody = await response.text();
       console.error('OpenAI API Error:', errorBody);
@@ -65,15 +60,17 @@ exports.handler = async function(event) {
     const data = await response.json();
     const content = data.choices[0].message.content;
 
-    // 5. Send the successful response back to the frontend.
+    // The AI might return the questions directly as a stringified JSON.
+    // We parse it and then stringify it again to ensure it's a valid JSON response.
+    const parsedContent = JSON.parse(content);
+
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: content,
+      body: JSON.stringify(parsedContent.questions || []), // Ensure we send back an array
     };
 
   } catch (error) {
-    // Handle any other errors that might occur.
     console.error('An unexpected error occurred:', error);
     return {
       statusCode: 500,
@@ -81,4 +78,3 @@ exports.handler = async function(event) {
     };
   }
 };
-

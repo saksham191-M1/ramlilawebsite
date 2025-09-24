@@ -360,60 +360,54 @@ export default function QuizPage() {
 // In page.tsx
 
 const fetchLeaderboard = async () => {
-  setIsLoading(true);
-  try {
-    // CORRECTED URL: Changed 'getLeaderboard' to 'leaderboard'
-    const response = await fetch('/.netlify/functions/leaderboard?limit=10'); 
-    
-    if (response.ok) {
-      const data = await response.json();
-      setLeaderboard(data); // Update the state with data from the database
-    } else {
-      // Your existing fallback logic is great!
+    setIsLoading(true);
+    try {
+      const response = await fetch('/.netlify/functions/leaderboard?limit=10');
+
+      if (response.ok) {
+        const data = await response.json();
+        setLeaderboard(data);
+      } else {
+        const savedLeaderboard = localStorage.getItem("ramlila-leaderboard");
+        if (savedLeaderboard) {
+          setLeaderboard(JSON.parse(savedLeaderboard));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
       const savedLeaderboard = localStorage.getItem("ramlila-leaderboard");
       if (savedLeaderboard) {
         setLeaderboard(JSON.parse(savedLeaderboard));
       }
+    } finally {
+        setIsLoading(false);
     }
-  } catch (error) {
-    console.error('Error fetching leaderboard:', error);
-    const savedLeaderboard = localStorage.getItem("ramlila-leaderboard");
-    if (savedLeaderboard) {
-      setLeaderboard(JSON.parse(savedLeaderboard));
-    }
-  } finally {
-      setIsLoading(false);
-  }
-};
+  };
   // Replace the existing initializeQuiz function in your page.tsx with this one.
 
 const initializeQuiz = async () => {
   setIsLoading(true);
   try {
-    // 1. Fetch 5 questions from your AI API
-    const response = await fetch('/api/generate-quiz', {
+    const response = await fetch('/.netlify/functions/generate-quiz', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         topic: 'Ramayana Characters',
         language: 'hi',
-        count: 5, // Ask the AI for 5 new questions
+        count: 5,
         difficulty: 'medium'
       })
     });
 
     if (!response.ok) {
-      // If the API call fails, the 'catch' block will handle it.
       throw new Error('API request failed');
     }
 
     const aiQuestions: QuizQuestion[] = await response.json();
 
-    // 2. Get 5 random questions from your hardcoded list
     const shuffledHardcoded = [...allQuizQuestions].sort(() => Math.random() - 0.5);
     const hardcodedQuestions = shuffledHardcoded.slice(0, 5);
 
-    // 3. Combine and shuffle them together
     const combinedQuestions = [...aiQuestions, ...hardcodedQuestions];
     const finalShuffledQuestions = combinedQuestions.sort(() => Math.random() - 0.5);
 
@@ -421,7 +415,6 @@ const initializeQuiz = async () => {
 
   } catch (error) {
     console.error('Could not fetch AI questions, using fallback:', error);
-    // 4. Fallback: If the API fails, just use 10 hardcoded questions
     const shuffled = [...allQuizQuestions].sort(() => Math.random() - 0.5);
     setQuizQuestions(shuffled.slice(0, 10));
   } finally {
@@ -464,40 +457,37 @@ const initializeQuiz = async () => {
   // In page.tsx
 
 const saveToLeaderboard = async () => {
-  if (!playerName.trim()) return;
+    if (!playerName.trim()) return;
 
-  setIsLoading(true);
-  const percentage = Math.round((score / quizQuestions.length) * 100);
+    setIsLoading(true);
+    const percentage = Math.round((score / quizQuestions.length) * 100);
 
-  try {
-    // This URL calls your addScore.js function
-    const response = await fetch('/.netlify/functions/addScore', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: playerName.trim(),
-        score,
-        percentage, // You can send any extra data you want to save
-      }),
-    });
+    try {
+      const response = await fetch('/.netlify/functions/addScore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: playerName.trim(),
+          score,
+          percentage,
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error('API request to save score failed');
+      if (!response.ok) {
+        throw new Error('API request to save score failed');
+      }
+
+      await fetchLeaderboard();
+      setShowNameInput(false);
+      setShowLeaderboard(true);
+
+    } catch (error) {
+      console.error('Error saving score, falling back to localStorage:', error);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // After saving, refresh the leaderboard to show the new score
-    await fetchLeaderboard(); 
-    setShowNameInput(false);
-    setShowLeaderboard(true);
-
-  } catch (error) {
-    // Your localStorage fallback is a good safety net
-    console.error('Error saving score, falling back to localStorage:', error);
-    // ... (Your existing fallback logic can remain here) ...
-  } finally {
-    setIsLoading(false);
-  }
-};
 
   const resetQuiz = () => {
     setCurrentQuestion(0)

@@ -4,15 +4,3 @@
   command = "pnpm run build"
   publish = ".next"
   functions = "netlify/functions"
-
-# This is the crucial part that fixes your 404 errors.
-# It tells Netlify how to handle requests to your API.
-[[redirects]]
-  # The path the frontend will call:
-  from = "/api/*"
-  # The actual location of the function Netlify will run:
-  to = "/.netlify/functions/:splat"
-  # The status code 200 makes this a "rewrite," so the URL in the browser
-  # doesn't change, which is what you want for an API.
-  status = 200
-

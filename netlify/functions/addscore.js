@@ -1,4 +1,4 @@
-// File: netlify/functions/addScore.js
+// File: netlify/functions/addscore.js
 
 const { Pool } = require('pg');
 
@@ -17,30 +17,30 @@ exports.handler = async function(event, context) {
 
   try {
     // 1. Parse the incoming data
-    const { name, score } = JSON.parse(event.body);
+    const { name, score, percentage } = JSON.parse(event.body);
 
     // 2. Validate the data
-    if (!name || typeof score !== 'number') {
+    if (!name || typeof score !== 'number' || typeof percentage !== 'number') {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Invalid name or score provided.' })
+        body: JSON.stringify({ error: 'Invalid name, score, or percentage provided.' })
       };
     }
 
     // 3. Connect to the database and insert the score
     const client = await pool.connect();
-    const query = 'INSERT INTO leaderboard (name, score) VALUES ($1, $2) RETURNING id;';
-    const values = [name, score];
-    
+    const query = 'INSERT INTO leaderboard (name, score, percentage) VALUES ($1, $2, $3) RETURNING id;';
+    const values = [name, score, percentage];
+
     const result = await client.query(query, values);
     client.release();
 
     // 4. Return a success response
     return {
       statusCode: 200,
-      body: JSON.stringify({ 
-        message: 'Score added successfully!', 
-        newEntryId: result.rows[0].id 
+      body: JSON.stringify({
+        message: 'Score added successfully!',
+        newEntryId: result.rows[0].id
       })
     };
 
