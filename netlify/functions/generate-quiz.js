@@ -1,6 +1,5 @@
-/**
- * This is a Netlify Function that acts as a secure proxy to the OpenAI API.
- */
+// File: netlify/functions/generate-quiz.js
+
 exports.handler = async function(event) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -8,66 +7,49 @@ exports.handler = async function(event) {
 
   try {
     const request = JSON.parse(event.body);
-
-    // --- Server-side validation ---
-    const count = Math.min(request.count || 5, 10); // Limit to 10 questions max
-    const topic = request.topic || 'Ramayana';
-    const language = ['hi', 'en'].includes(request.language) ? request.language : 'hi';
-    const difficulty = ['easy', 'medium', 'hard'].includes(request.difficulty) ? request.difficulty : 'medium';
-    // --- End validation ---
-
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.QUIZ_API_KEY;
 
     if (!apiKey) {
-      console.error("OPENAI_API_KEY is not set.");
-      throw new Error("Server configuration error.");
+      throw new Error("QUIZ_API_KEY environment variable not set.");
     }
-    
-    const prompt = `Generate ${count} quiz questions about ${topic} in ${language}.
+
+    const prompt = `Generate ${request.count || 5} quiz questions about ${request.topic || 'Ramayana'} in ${request.language || 'hi'}.
       Requirements:
-      - Language: ${language}
-      - Difficulty: ${difficulty}
-      - Topic: ${topic}
+      - Language: ${request.language || 'hi'}
+      - Difficulty: ${request.difficulty || 'medium'}
       - Format: Multiple choice with 4 options each.
       - Include detailed explanations for the correct answers.
-      - Return ONLY the questions in a valid JSON array format inside a JSON object with a key "questions".
-      - Do not include any text or markdown formatting before or after the JSON object.`;
+      - Return ONLY the questions in a valid JSON array format like this: [{"question": "...", "options": [...], "correct": 0, "explanation": "..."}]
+      - Do not include any text or markdown formatting before or after the JSON array.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // UPDATED URL with the correct model name
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: 'You are an expert quiz generator specializing in Ramayana and Ramlila knowledge. Generate accurate, educational, and engaging quiz questions.' },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-        response_format: { "type": "json_object" }
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+        }
       })
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error('OpenAI API Error:', errorBody);
-      return { statusCode: response.status, body: `OpenAI API error: ${errorBody}` };
+      throw new Error(`Google API error: ${response.status} ${errorBody}`);
     }
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
-
-    // The AI might return the questions directly as a stringified JSON.
-    // We parse it and then stringify it again to ensure it's a valid JSON response.
-    const parsedContent = JSON.parse(content);
-
+    const content = data.candidates[0].content.parts[0].text;
+    
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(parsedContent.questions || []), // Ensure we send back an array
+      body: content,
     };
 
   } catch (error) {

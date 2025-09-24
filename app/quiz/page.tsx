@@ -456,38 +456,42 @@ const initializeQuiz = async () => {
 
   // In page.tsx
 
+// Corrected function for app/quiz/page.tsx
+
 const saveToLeaderboard = async () => {
-    if (!playerName.trim()) return;
+  if (!playerName.trim()) return;
 
-    setIsLoading(true);
-    const percentage = Math.round((score / quizQuestions.length) * 100);
+  setIsLoading(true);
+  const percentage = Math.round((score / quizQuestions.length) * 100);
+  const timeSpent = Math.round((Date.now() - quizStartTime) / 1000); // Calculate time in seconds
 
-    try {
-      const response = await fetch('/.netlify/functions/addScore', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: playerName.trim(),
-          score,
-          percentage,
-        }),
-      });
+  try {
+    const response = await fetch('/.netlify/functions/addScore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: playerName.trim(),
+        score,
+        percentage,
+        timeSpent, // <-- This line is added
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error('API request to save score failed');
-      }
-
-      await fetchLeaderboard();
-      setShowNameInput(false);
-      setShowLeaderboard(true);
-
-    } catch (error) {
-      console.error('Error saving score, falling back to localStorage:', error);
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error('API request to save score failed');
     }
-  };
 
+    await fetchLeaderboard();
+    setShowNameInput(false);
+    setShowLeaderboard(true);
+
+  } catch (error) {
+    console.error('Error saving score, falling back to localStorage:', error);
+    // Fallback logic can be added here if you wish
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const resetQuiz = () => {
     setCurrentQuestion(0)

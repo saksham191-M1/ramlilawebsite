@@ -1,4 +1,4 @@
-// File: netlify/functions/addscore.js
+// File: netlify/functions/addScore.js
 
 const { Pool } = require('pg');
 
@@ -10,32 +10,30 @@ const pool = new Pool({
 });
 
 exports.handler = async function(event, context) {
-  // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
   try {
-    // 1. Parse the incoming data
-    const { name, score, percentage } = JSON.parse(event.body);
+    // 1. Parse all required data, including timeSpent
+    const { name, score, percentage, timeSpent } = JSON.parse(event.body);
 
     // 2. Validate the data
-    if (!name || typeof score !== 'number' || typeof percentage !== 'number') {
+    if (!name || typeof score !== 'number' || typeof percentage !== 'number' || typeof timeSpent !== 'number') {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Invalid name, score, or percentage provided.' })
+        body: JSON.stringify({ error: 'Invalid data provided.' })
       };
     }
 
-    // 3. Connect to the database and insert the score
-    const client = await pool.connect();
-    const query = 'INSERT INTO leaderboard (name, score, percentage) VALUES ($1, $2, $3) RETURNING id;';
-    const values = [name, score, percentage];
+    // 3. UPDATED SQL QUERY: Insert the timeSpent value into the time_taken column
+    const query = 'INSERT INTO leaderboard (name, score, percentage, time_taken) VALUES ($1, $2, $3, $4) RETURNING id;';
+    const values = [name, score, percentage, timeSpent];
 
+    const client = await pool.connect();
     const result = await client.query(query, values);
     client.release();
 
-    // 4. Return a success response
     return {
       statusCode: 200,
       body: JSON.stringify({

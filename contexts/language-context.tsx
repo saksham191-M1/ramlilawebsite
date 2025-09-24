@@ -56,7 +56,7 @@ const translations = {
 
     // Footer
     "footer.contact": "Contact Us",
-    "footer.address": "Ramlila Park, Shivani Vihar, Delhi",
+    "footer.address": "Ramlila Park, Shivani Vihar, Kalyanpur, Lucknow, UP",
     "footer.phone": "Phone: +91-XXXXXXXXXX",
     "footer.email": "Email: kalyanpurramleela20@gmail.com",
   },
@@ -84,7 +84,7 @@ const translations = {
     // Events Section
     "events.title": "कार्यक्रम",
     "events.dates": "27 सितंबर से 2 अक्टूबर 2024",
-    "events.location": "रामलीला पार्क, शिवानी विहार",
+    "events.location": "रामलीला पार्क, शिवानी विहार, कल्याणपुर, लखनऊ, उत्तर प्रदेश",
     "events.free": "निःशुल्क प्रवेश",
 
     // Quiz Section
@@ -105,7 +105,7 @@ const translations = {
 
     // Footer
     "footer.contact": "संपर्क करें",
-    "footer.address": "रामलीला पार्क, शिवानी विहार, दिल्ली",
+    "footer.address": "रामलीला पार्क, शिवानी विहार, कल्याणपुर, लखनऊ, उत्तर प्रदेश",
     "footer.phone": "फोन: +91-XXXXXXXXXX",
     "footer.email": "ईमेल: kalyanpurramleela20@gmail.com",
   },

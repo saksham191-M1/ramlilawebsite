@@ -44,10 +44,10 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-white">Contact</h4>
             <div className="space-y-2 text-white/80">
-              <p>Kalyanpur Community Ground</p>
+              <p>Ramlila Park, Shivani Vihar, Kalyanpur, Lucknow, UP</p>
               <p>Kalyanpur, India</p>
               <p>Phone: +91 XXXXX XXXXX</p>
-              <p>Email: info@ramlilakalyanpur.org</p>
+              <p>Email: kalyanpurramleela20@gmail.com</p>
             </div>
           </div>
         </div>

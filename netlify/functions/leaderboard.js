@@ -1,28 +1,30 @@
-// Import the pg library
+// File: netlify/functions/leaderboard.js
+
 const { Pool } = require('pg');
 
-// Create a new Pool object using the DATABASE_URL environment variable
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false // Required for Neon connections
+    rejectUnauthorized: false
   }
 });
 
 exports.handler = async function(event, context) {
   try {
-    // Connect to the database
     const client = await pool.connect();
-    
-    // Run a SQL query to get the top 10 scores
-    const result = await client.query('SELECT name, score FROM leaderboard ORDER BY score DESC LIMIT 10;');
-    
-    // Release the client connection
+
+    // UPDATED QUERY:
+    // - Select the new time_taken column
+    // - Order by score DESC (highest first), then time_taken ASC (lowest first)
+    const result = await client.query(
+      'SELECT name, score, percentage, date, time_taken FROM leaderboard ORDER BY score DESC, time_taken ASC LIMIT 10;'
+    );
+
     client.release();
 
     return {
       statusCode: 200,
-      body: JSON.stringify(result.rows) // Send the data back as JSON
+      body: JSON.stringify(result.rows)
     };
 
   } catch (error) {
