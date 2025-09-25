@@ -35,7 +35,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/donate" className="text-white/80 hover:text-white transition-colors">
-                  दान करें
+                  Donate
                 </Link>
               </li>
             </ul>
